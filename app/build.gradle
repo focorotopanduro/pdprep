@@ -1,0 +1,50 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.carlos.pdprep'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.carlos.pdprep"
+        minSdk 21
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+        resourceConfigurations += ['en']
+        vectorDrawables.useSupportLibrary = false
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+        }
+        debug {
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/*', 'kotlin/**', '**/*.kotlin_metadata', '**/*.kotlin_builtins']
+        }
+    }
+
+    buildFeatures {
+        buildConfig false
+    }
+}
+
+dependencies {
+    // Zero external dependencies — pure Android framework
+}

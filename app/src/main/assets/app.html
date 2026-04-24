@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0A0C10">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Carlos · Interview Prep</title>
+<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Interview Prep","short_name":"Prep","start_url":".","display":"standalone","background_color":"%230A0C10","theme_color":"%230A0C10"}'>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:#0A0C10;color:#E8E0D0;font-family:system-ui,-apple-system,Roboto,sans-serif;font-size:15px;line-height:1.5;overscroll-behavior:none}
+body{padding-bottom:80px}
+.hdr{background:#12151E;border-bottom:1px solid #1E2130;padding:14px 14px 12px;position:sticky;top:0;z-index:10}
+.hdr .k{font-size:10px;letter-spacing:.2em;color:#C8A96E;text-transform:uppercase;margin-bottom:3px;font-family:monospace}
+.hdr .n{font-size:15px;font-weight:600;color:#F5F0E8}
+.mode{display:flex;background:#0E1018;border-bottom:1px solid #1E2130}
+.mode button{flex:1;background:none;border:none;color:#5A5850;padding:12px 8px;font-size:13px;font-weight:500;border-bottom:2px solid transparent}
+.mode button.on{color:#C8A96E;border-bottom-color:#C8A96E}
+.tabs{display:flex;overflow-x:auto;background:#0E1018;border-bottom:1px solid #1E2130;padding:0 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{background:none;border:none;color:#5A5850;padding:10px 10px;font-size:11px;white-space:nowrap;border-bottom:2px solid transparent}
+.tabs button.on{font-weight:600}
+.wrap{padding:14px 12px 0}
+.card{background:#12151E;border:1px solid #1E2130;border-radius:8px;padding:12px 14px;margin-bottom:10px}
+.cs .card{border-left-width:3px;border-left-style:solid}
+.cs .t{font-size:12px;font-weight:700;margin-bottom:5px;letter-spacing:.03em}
+.cs .d{font-size:13px;line-height:1.6;color:#C0B8A8}
+.cs .lsbtn{margin-top:8px}
+.prog{padding:12px 14px;background:#0E1018;border-bottom:1px solid #1E2130}
+.prog .bar{height:4px;background:#2A2D3A;border-radius:2px;overflow:hidden}
+.prog .bar div{height:100%;border-radius:2px;transition:width .3s}
+.prog .lbl{font-size:11px;color:#8A8070;margin-top:6px;font-family:monospace;display:flex;justify-content:space-between}
+.q{background:linear-gradient(135deg,#1A1D28,#16192A);border:1px solid #2A2D3A;border-radius:10px;margin-bottom:12px;overflow:hidden}
+.q.open{border-color:#C8A96E55}
+.q.done{background:rgba(126,200,126,.05);border-color:rgba(126,200,126,.3)}
+.q .head{padding:16px 14px;display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.q .dot{width:6px;height:6px;border-radius:50%;margin-top:8px;flex-shrink:0}
+.q .qt{margin:0;font-size:14px;line-height:1.5;font-style:italic;flex:1;color:#E8E0D0}
+.q.done .qt{color:#9AD09A}
+.q .arr{font-size:16px;color:#4A4D5A;flex-shrink:0;transition:transform .25s}
+.q.open .arr{transform:rotate(180deg)}
+.q .body{border-top:1px solid #C8A96E33;padding:14px 14px 16px;background:rgba(0,0,0,.2);display:none}
+.q.open .body{display:block}
+.q .lbl{font-size:11px;letter-spacing:.15em;text-transform:uppercase;font-family:monospace;margin-bottom:8px}
+.q .ans{margin:0 0 14px;font-size:14px;line-height:1.65;color:#D0C8B8}
+.q .tip{border-radius:8px;padding:9px 12px;margin-bottom:14px;font-size:13px;line-height:1.5}
+.q .tip b{font-family:monospace;font-size:11px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.lsbtn{background:#1E2130;border:1px solid #2A2D3A;color:#C8A96E;border-radius:20px;padding:8px 14px;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-family:inherit;min-height:40px}
+.lsbtn.playing{background:#C8A96E22;border-color:#C8A96E;color:#F5D080}
+.lsbtn:active{opacity:.7}
+.mark{background:transparent;border:1px solid #4A4D5A;color:#8A8070;border-radius:20px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit;min-height:40px}
+.mark.done{background:#7EC87E22;border-color:#7EC87E;color:#7EC87E}
+.foot{padding:16px 14px 0}
+.foot .box{background:#12151E;border:1px solid #2A2D3A;border-radius:8px;padding:12px 14px;text-align:center}
+.foot .k{font-size:11px;color:#C8A96E;margin-bottom:4px;font-weight:600}
+.foot .t{font-size:12px;color:#8A8070;line-height:1.6}
+.install{position:fixed;bottom:0;left:0;right:0;background:#12151E;border-top:1px solid #C8A96E55;padding:10px 14px;font-size:11px;color:#C0B8A8;display:none;z-index:20;line-height:1.45}
+.install b{color:#C8A96E}
+.install .x{position:absolute;top:6px;right:10px;background:none;border:none;color:#8A8070;font-size:16px;padding:4px 8px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="k">Interview Prep</div>
+  <div class="n">Carlos &middot; Power Design Inc.</div>
+</div>
+
+<div class="mode">
+  <button id="mCheat" class="on">Cheat Sheet</button>
+  <button id="mPrep">Interview Prep</button>
+</div>
+
+<div id="tabsCheat" class="tabs"></div>
+<div id="tabsPrep" class="tabs" style="display:none"></div>
+
+<div id="progPrep" class="prog" style="display:none">
+  <div class="bar"><div id="progBar"></div></div>
+  <div class="lbl"><span id="progTxt">0/0 ready</span><span id="progPct">0%</span></div>
+</div>
+
+<div id="wrapCheat" class="wrap cs"></div>
+<div id="wrapPrep" class="wrap" style="display:none"></div>
+
+<div id="footCheat" class="foot">
+  <div class="box">
+    <div class="k">REMEMBER</div>
+    <div class="t">They recruited you. You have 1,000+ systems. You designed a 24-unit apartment gang trunk system. You built and trained a team on Bolt Enterprise. You know your codes. Walk in ready.</div>
+  </div>
+</div>
+
+<div id="footPrep" class="foot" style="display:none">
+  <div class="box">
+    <div class="k">REMEMBER</div>
+    <div class="t">You were recruited. Your 1,000+ systems, your gang trunk line apartment design, your Bolt Enterprise transition, and your national builder relationships are real differentiators. Be specific. Be calm. Own your story.</div>
+  </div>
+</div>
+
+<div id="inst" class="install">
+  <button class="x" onclick="document.getElementById('inst').style.display='none'">&times;</button>
+  <b>Install this app:</b> open Chrome menu &rarr; "Add to Home screen". Then it runs offline with its own icon.
+</div>
+
+<script>
+// ---- DATA ----
+var cheatSections=[
+ {id:"weapons",label:"\u2694\ufe0f Your 5 Weapons",color:"#C8A96E",items:[
+  {title:"1,000+ Systems Designed",detail:"Not just takeoffs \u2014 full ISO drawings in QuickPlumb Pro. 3D. Buildable."},
+  {title:"Gang Trunk Line Apartment",detail:"4 floors, 24 units, shared underground trunk main. Stacked DWV, vent stacks, cleanouts \u2014 all in QuickPlumb Pro. Designed it. Got it right."},
+  {title:"Bolt Enterprise + Excel",detail:"Led the transition. Built the framework. Trained 5 people. Scaled output without scaling headcount."},
+  {title:"National Builder Relationships",detail:"D.R. Horton, Pulte, MI Homes, Toll Brothers. Awards received. They trusted us because we were accurate and fast."},
+  {title:"Code Knowledge \u2014 Residential & Commercial",detail:"FBC Plumbing. DWV, backflow, water heaters. Commercial: vent stacks, stack venting, overhead coordination with other trades."}
+ ]},
+ {id:"project",label:"\ud83c\udfd7\ufe0f The Apartment Project",color:"#6E9EC8",items:[
+  {title:"What it was",detail:"4-story apartment building. 24 units total \u2014 6 per floor."},
+  {title:"The system",detail:"Gang trunk line: shared underground main beneath all 6 ground floor units."},
+  {title:"The challenge",detail:"DWV stacks rising from trunk to serve each floor. Had to nail slope, stack sizing, vent design, and cleanout placement \u2014 all coordinated."},
+  {title:"The tool",detail:"Designed entirely in QuickPlumb Pro. Full ISO drawings. Accurate enough to build from."},
+  {title:"The result",detail:"Every unit on every floor tied in correctly. I held the whole system spatially and got it right."}
+ ]},
+ {id:"specifics",label:"\ud83d\udee1\ufe0f When You Don't Know Specifics",color:"#C87E7E",items:[
+  {title:"On dollar values",detail:"Estimating and sales were siloed \u2014 contract values didn't always come back to my side. What I can tell you is these were $1M+ plumbing scopes for national builders."},
+  {title:"On which commercial projects",detail:"I don't have project names committed to memory, but I can walk you through the process and the complexity \u2014 that's where I actually lived."},
+  {title:"On anything you're unsure of",detail:"I want to be straight with you \u2014 here's the honest answer. What I can tell you with full confidence is what I do know."},
+  {title:"If they push harder",detail:"I'd rather give you an honest approximation than a number I'm not sure of. What I know for certain is this, and I'll anchor back to my strengths."}
+ ]},
+ {id:"powerdesign",label:"\ud83c\udfe2 Power Design Facts",color:"#9E7EC8",items:[
+  {title:"What they are",detail:"National Design-Build Multi-Trade Contractor. Headquartered in Saint Petersburg, Florida. Established 1989."},
+  {title:"What they do",detail:"Electrical, mechanical, plumbing, systems tech. Multi-trade under one roof."},
+  {title:"Plumbing division",detail:"Models to L O D 450 \u2014 construction-ready detail level. V D C team handles coordination before install."},
+  {title:"Your VDC bridge",detail:"My ISO drawings in QuickPlumb Pro operate at the same accuracy standard \u2014 construction-ready models. I'd transition into full V D C fast."},
+  {title:"Their culture",detail:"They celebrate wins as a team. They hit a bell when a bid is won. Match that energy \u2014 they want people who care about winning."}
+ ]},
+ {id:"phrases",label:"\ud83d\udcac Power Phrases",color:"#7EC8A0",items:[
+  {title:"On your edge",detail:"I don't just take off plans \u2014 I design the system first, then estimate it."},
+  {title:"On VDC",detail:"My QuickPlumb Pro ISO workflow is the same discipline \u2014 construction-ready accuracy. I'd pick up full V D C fast."},
+  {title:"On code",detail:"Estimators who understand code catch problems before they become change orders."},
+  {title:"On volume",detail:"At 1,000+ systems, data discipline isn't optional \u2014 it's how you keep your error rate low."},
+  {title:"On being recruited",detail:"Stay calm. They came to you. You're evaluating them too."}
+ ]}
+];
+
+var prepCats=[
+ {id:"resume",label:"\ud83d\udcc4 From Your Resume",color:"#C8A96E"},
+ {id:"technical",label:"\ud83d\udd27 Technical",color:"#6E9EC8"},
+ {id:"behavioral",label:"\ud83e\udde0 Behavioral",color:"#7EC87E"},
+ {id:"company",label:"\ud83c\udfe2 Power Design",color:"#C87E9E"}
+];
+
+var prepQs=[
+ {c:"resume",q:"Tell me about a specific system you designed that you're particularly proud of.",a:"There's one that stands out \u2014 a four-story apartment building where I designed the full plumbing system in QuickPlumb Pro from the ground up. The building had 24 units across four floors, six per floor, and the approach was a gang trunk line \u2014 a shared underground main running beneath all six ground floor units, with the D W V stacks rising vertically to serve each floor above. Getting that right required precise slope calculations on the underground trunk, correct stack sizing to handle the combined load of all four floors, proper vent stack design, and cleanout placement that would actually be accessible. Every unit on every floor had to tie in correctly or the whole system fails. I had to hold all of that spatially in QuickPlumb Pro and make sure the ISO drawings were accurate enough to build from. That project pushed me and I got it right.",tip:"This is your showcase answer. It proves you think like a system designer, not just an estimator. Deliver it with quiet confidence \u2014 you earned this one."},
+ {c:"resume",q:"Walk me through your background as a plumbing estimator.",a:"I've been in plumbing estimation at Mechanical One since 2024, and what sets my experience apart is that I don't just count fixtures on a flat plan \u2014 I actually design systems. I've used QuickPlumb Pro to produce full ISO drawings for over 1,000 plumbing systems, which means I understand what I'm estimating in three dimensions. That spatial understanding makes my numbers more accurate and my takeoffs faster. On top of that, I led our software transition to Bolt Enterprise, built Q A protocols, trained the team, and secured multi-million dollar bids with national builders like D.R. Horton and Pulte. I bring the design side and the business side together.",tip:"Lead with what makes you different \u2014 the ISO design experience. Most estimators just do takeoffs. You actually design systems. Own that."},
+ {c:"resume",q:"You've worked on over 1,000 systems \u2014 what does your takeoff process actually look like?",a:"My process goes deeper than a standard takeoff. I start with the blueprint review, but then I move into QuickPlumb Pro where I'm actually designing the system \u2014 building full ISO drawings that show the spatial layout, pipe routing, connections, and fixture placements in three dimensions. That step is what separates a guess from a reliable number, because you're catching conflicts and routing issues before they hit the field. From there I bring all the data into Bolt Enterprise for the full bid build, and I use Excel to manage and cross-reference large data sets \u2014 fixture counts, material costs, labor units. Q A happens at every layer, not just at the end.",tip:"This is a major differentiator. You're describing a design-then-estimate workflow, not just a count-and-price workflow. That's a higher level of skill."},
+ {c:"resume",q:"Tell me about leading the transition to Bolt Enterprise.",a:"Our previous workflow had a lot of manual steps that introduced errors and slowed us down on turnaround time. I identified Bolt Enterprise as the right tool for our volume and pushed for the switch. I didn't just implement it \u2014 I built new estimation frameworks around it, set up Q A protocols so the team had guardrails, and personally trained five team members. It took time and buy-in, but the payoff was real \u2014 we scaled our output without scaling our headcount.",tip:"This shows leadership, not just technical skill. Emphasize that you drove the change, not just participated in it."},
+ {c:"resume",q:"How did you expand into custom and commercial markets?",a:"It was really about being competitive and data-driven. I did deep market research on comparable projects, understood what our cost structure looked like versus competitors, and built bids that were tight but defensible. I also made sure our presentations showed value beyond price \u2014 clear scope breakdowns, compliance documentation, quick turnaround. Opening those doors with custom and commercial clients required trust, and that trust came from consistent, accurate bids over time.",tip:"Confidence here. You helped grow revenue for the company \u2014 that's a major talking point."},
+ {c:"resume",q:"What's it like working directly with builders like D.R. Horton and Pulte?",a:"The nationals are very process-oriented. They expect accurate numbers, fast turnaround, and zero surprises. They also want a technical partner \u2014 someone who can flag code issues or value engineering opportunities before it becomes a change order. I became the primary contact for our relationships with both builders because I could communicate clearly on both the technical and business side. It's about being reliable and speaking their language.",tip:"Power Design works with major clients too. Show you understand how to operate at that level."},
+ {c:"resume",q:"What's your strongest estimation tool and how does your software stack connect?",a:"QuickPlumb Pro is where I'm most confident because it's where I do my actual system design. I build full ISO drawings \u2014 three-dimensional isometric models of the plumbing system \u2014 which lets me spot routing conflicts, verify code compliance, and produce something accurate enough that a crew can work from it. That design step feeds directly into my Bolt Enterprise workflow, where I manage the full bid. For large data sets I use Advanced Excel to cross-reference fixture counts, material costs, and labor units. On-Screen Takeoff rounds out the toolkit. But QuickPlumb Pro's ISO capability is what I'd call my edge.",tip:"Walk them through how your tools connect \u2014 QuickPlumb Pro to Bolt to Excel is a real workflow story, not just a skills list."},
+ {c:"technical",q:"Power Design uses V D C and models to L O D 450. Do you have experience at that level?",a:"Yes \u2014 not in a Revit or full B I M environment, but through QuickPlumb Pro's ISO drawing workflow I've been doing high-detail 3 D system design for over 1,000 systems. I've produced isometric models that are accurate enough to fabricate and install from \u2014 dimensions, routing, connections, fixture placements. That's the same fundamental discipline as L O D 450: construction-ready, not just illustrative. I haven't worked inside a full V D C coordination environment yet, but the thinking and accuracy standards are things I already apply every day. I'd transition fast.",tip:"Honest and strong. You're connecting real experience to their process. Deliver this with confidence."},
+ {c:"technical",q:"How do you manage data accuracy across large volumes of bids?",a:"That's where my Bolt Enterprise and Excel combination does the heavy lifting. Bolt handles the structured bid data \u2014 scope, quantities, labor, material \u2014 and I built our Q A framework around it so there are checkpoints before any number leaves the system. Excel is where I do my cross-referencing: comparing fixture counts across plan revisions, validating unit costs against historical data, and flagging anything out of range. When you're running dozens of systems at once for national builders, a single bad assumption compounds fast. The discipline I built around data validation is how I kept our error rate low at that volume.",tip:"They want to know you can handle volume without losing accuracy. This answer proves it directly."},
+ {c:"technical",q:"What's your exposure to commercial plumbing and how does your code knowledge translate?",a:"My primary experience is residential at high volume, but I've been involved in commercial bids and worked closely alongside people doing commercial plumbing design. That exposure taught me what changes at the commercial level \u2014 and the biggest difference is the code requirements around venting. In commercial and multi-story buildings you're dealing with vent stacks and stack venting systems that are far more complex than residential. The D W V design has to account for pressure dynamics across multiple floors, cleanout placement is driven by stricter accessibility requirements, and everything runs overhead coordinated with H V A C and electrical. Learning those code distinctions gave me a deeper understanding of why plumbing systems are designed the way they are. I'm not a 20-year commercial veteran, but I'm not starting from zero either.",tip:"Honest and shows real code breadth. Why systems are designed the way they are signals engineering thinking, not just counting."},
+ {c:"technical",q:"How do you ensure your bids stay compliant with Florida plumbing codes?",a:"Code compliance is built into my process, not bolted on at the end. On the residential side I stay current on F B C Plumbing \u2014 water heater installations, D W V systems, backflow prevention, and venting. On the commercial side I've developed working knowledge of vent stack and stack venting requirements, which are significantly more complex. What I've found is that estimators who understand the code catch problems before they become change orders \u2014 because you're pricing what's actually required, not just what's drawn. That mindset is baked into every bid I put out.",tip:"Connecting code knowledge to cost accuracy tells them your code literacy saves money, not just avoids violations."},
+ {c:"technical",q:"How do you approach value engineering on a plumbing bid?",a:"I approach it at the system design level, which is where I have a real advantage. Because I'm building ISO drawings in QuickPlumb Pro, I can see pipe routing in three dimensions and identify where we can reduce run lengths, simplify connections, or group fixtures more efficiently before the number even gets built. That spatial view catches V E opportunities that a flat plan takeoff would miss. For labor savings I look at prefab-friendly configurations. For material, I look at spec substitutions that hold performance without the cost premium. At Power Design's scale with V D C integration, I'd want to be plugged in with the design team early so those opportunities get captured at the estimate stage \u2014 not as an afterthought.",tip:"You're connecting your QuickPlumb Pro ISO workflow to V D C thinking. That's exactly the mindset Power Design wants."},
+ {c:"technical",q:"How do you handle tight bid deadlines \u2014 say a 48-hour turnaround on a large scope?",a:"Prioritization and a clear process. I triage the scope first \u2014 what's the highest-cost, highest-risk portion and what can move faster? I build my takeoff in logical sections and do rolling Q A rather than waiting until the end. If I have team resources, I'll parallelize. And I keep communication open with whoever submitted the bid so they know if I have a concern about the deadline before it becomes a crisis.",tip:"Keep this practical. They need to know you perform under pressure without losing accuracy."},
+ {c:"behavioral",q:"Can you give me a specific project you won and what the contract value was?",a:"I want to be upfront \u2014 in my company the estimating and sales departments are pretty siloed, so final awarded contract values didn't always flow back to my side. What I can tell you is that the custom home programs I bid for builders like M I Homes, Toll Brothers, D.R. Horton and Pulte were consistently in the one million dollar plus range in plumbing scope, and our department received awards directly from those builders for our work. On the commercial side I contributed to several bids of larger scope. What I can walk you through in detail is the process, the complexity, and the type of work \u2014 because that's where I actually lived.",tip:"Honesty about the silo is completely believable \u2014 it's how most construction companies work. Confident and credible beats a made-up number every time."},
+ {c:"behavioral",q:"Tell me about a time you caught a significant error before it caused a problem.",a:"During a large residential bid, I was doing my final Q A review and noticed the fixture count in the model didn't match what was shown in the spec pages \u2014 there had been a plan revision that didn't get flagged. The discrepancy would have meant we were underestimating by a meaningful number of fixtures. I caught it, corrected it, and added a revision-tracking step to our Q A protocol going forward so we'd always cross-reference the latest plan revision before finalizing.",tip:"Lead with the catch, then pivot to what you put in place. Shows problem-solving AND process improvement."},
+ {c:"behavioral",q:"Describe a time you had to train or bring someone up to speed.",a:"When we rolled out Bolt Enterprise, I was responsible for training five team members with different experience levels. I didn't do a one-size-fits-all session \u2014 I assessed where each person was and tailored the training to their gaps. For some it was the software, for others it was the new Q A workflow. I also made myself available for questions after the formal training because that's when real learning happens. The goal wasn't just that they could use the tool, but that they understood why we built the framework the way we did.",tip:"Great example of leadership. Emphasize adaptability in how you taught different people differently."},
+ {c:"behavioral",q:"Tell me about a bid you didn't win. What did you take away from it?",a:"There was a commercial project where we came in second. After the award I asked for a feedback call and learned we were close on price but the client felt our scope letter wasn't detailed enough to build confidence. That feedback was valuable \u2014 I reworked how we present assumptions and exclusions to make them clearer and more client-facing. We've won similar scopes since then, and I attribute part of that to tightening up how we communicate our bids, not just the numbers themselves.",tip:"Vulnerability plus growth. Never blame the client or say price was the only factor."},
+ {c:"behavioral",q:"How do you handle disagreements with a project manager or G C on scope?",a:"I lead with documentation. If there's a disagreement on what's in scope, I go back to the plans, the spec, and my scope letter and lay out exactly what the basis was for my number. If there's a legitimate gap, I own it and we figure out the path forward. If I believe the scope was always excluded, I make that case clearly and professionally. The goal is always to resolve it quickly and keep the project moving \u2014 not to win an argument.",tip:"Shows you can hold your position professionally without being difficult to work with."},
+ {c:"company",q:"Why Power Design? Why are you interested in this move?",a:"Power Design operates at a scale and sophistication level that genuinely excites me. You're doing multi-trade design-build work across the country, not just estimating in a single lane. The integration of V D C, prefabrication, and plumbing under one roof is exactly the direction I want to grow in. I've built strong fundamentals at Mechanical One, and I want to bring that to an environment where I can work on bigger, more complex projects and keep developing.",tip:"They recruited you \u2014 frame this as genuine interest, not desperation. You're evaluating them too."},
+ {c:"company",q:"What do you know about Power Design's plumbing division?",a:"Power Design is a national design-build contractor based in Saint Pete \u2014 multi-trade work across electrical, mechanical, and plumbing. On the plumbing side, your team models to L O D 450 and integrates V D C for constructibility review and coordination before anything hits the field. That's a serious commitment to quality and prefab efficiency. You're also licensed across more than a dozen states, which tells me you're operating at a national level with real scale.",tip:"Very few candidates research at this level. Deliver it naturally, not like you're reading from a list."},
+ {c:"company",q:"Where do you see yourself in this role in the first 90 days?",a:"In the first 30 days, I'm learning \u2014 the tools, the workflows, the team dynamic, how Power Design structures its bids. I'm not here to immediately change things. In the next 30, I want to be contributing independently on bids without needing a lot of hand-holding. By 90 days, I want to be someone the team can rely on to own a bid from takeoff to submission with confidence. I want to add value quickly and earn the trust of the people around me.",tip:"Shows self-awareness and humility while projecting confidence. Don't say you'll come in and change everything."}
+];
+
+// ---- STATE ----
+var mode="cheat";
+var curCheat="weapons";
+var curPrep="resume";
+var done=load();
+var openCard=null;
+var playing=null; // the current playing button element
+var ttsReady="speechSynthesis" in window;
+
+function load(){try{return JSON.parse(localStorage.getItem("pd_done")||"{}")}catch(e){return{}}}
+function save(){try{localStorage.setItem("pd_done",JSON.stringify(done))}catch(e){}}
+
+// ---- TTS ----
+function stopTTS(){
+  if(!ttsReady)return;
+  try{window.speechSynthesis.cancel()}catch(e){}
+  if(playing){playing.classList.remove("playing");playing.firstChild.nodeValue="\ud83d\udd0a ";playing.lastChild.nodeValue="Listen";playing=null}
+}
+function speak(text,btn){
+  if(!ttsReady){alert("Your browser doesn't support speech. Try Chrome.");return}
+  if(playing===btn){stopTTS();return}
+  stopTTS();
+  var u=new SpeechSynthesisUtterance(text);
+  u.rate=0.98;u.pitch=1;u.volume=1;u.lang="en-US";
+  // pick a good english voice
+  var vs=window.speechSynthesis.getVoices();
+  for(var i=0;i<vs.length;i++){if(/en[-_]US/i.test(vs[i].lang)){u.voice=vs[i];break}}
+  u.onend=function(){if(playing===btn){btn.classList.remove("playing");btn.firstChild.nodeValue="\ud83d\udd0a ";btn.lastChild.nodeValue="Listen";playing=null}};
+  u.onerror=u.onend;
+  playing=btn;
+  btn.classList.add("playing");
+  btn.firstChild.nodeValue="\u23f8 ";
+  btn.lastChild.nodeValue="Stop";
+  try{window.speechSynthesis.speak(u)}catch(e){stopTTS()}
+}
+function mkListenBtn(text){
+  var b=document.createElement("button");
+  b.className="lsbtn";
+  b.type="button";
+  b.appendChild(document.createTextNode("\ud83d\udd0a "));
+  b.appendChild(document.createTextNode("Listen"));
+  b.addEventListener("click",function(e){e.stopPropagation();speak(text,b)});
+  return b;
+}
+
+// ---- RENDER: CHEAT ----
+function renderCheatTabs(){
+  var t=document.getElementById("tabsCheat");t.innerHTML="";
+  cheatSections.forEach(function(s){
+    var b=document.createElement("button");
+    b.textContent=s.label;
+    if(s.id===curCheat){b.className="on";b.style.color=s.color;b.style.borderBottomColor=s.color}
+    b.addEventListener("click",function(){stopTTS();curCheat=s.id;renderCheat()});
+    t.appendChild(b);
+  });
+}
+function renderCheat(){
+  renderCheatTabs();
+  var w=document.getElementById("wrapCheat");w.innerHTML="";
+  var sec=null;for(var i=0;i<cheatSections.length;i++)if(cheatSections[i].id===curCheat)sec=cheatSections[i];
+  if(!sec)return;
+  sec.items.forEach(function(it){
+    var card=document.createElement("div");
+    card.className="card";
+    card.style.borderLeftColor=sec.color;
+    card.style.borderColor=sec.color+"33";
+    var t=document.createElement("div");t.className="t";t.style.color=sec.color;t.textContent=it.title;
+    var d=document.createElement("div");d.className="d";d.textContent=it.detail;
+    card.appendChild(t);card.appendChild(d);
+    var ls=mkListenBtn(it.title+". "+it.detail);
+    ls.style.color=sec.color;
+    card.appendChild(ls);
+    w.appendChild(card);
+  });
+}
+
+// ---- RENDER: PREP ----
+function renderPrepTabs(){
+  var t=document.getElementById("tabsPrep");t.innerHTML="";
+  prepCats.forEach(function(c){
+    var b=document.createElement("button");
+    b.textContent=c.label;
+    if(c.id===curPrep){b.className="on";b.style.color=c.color;b.style.borderBottomColor=c.color}
+    b.addEventListener("click",function(){stopTTS();curPrep=c.id;openCard=null;renderPrep()});
+    t.appendChild(b);
+  });
+}
+function renderPrep(){
+  renderPrepTabs();
+  var cat=null;for(var i=0;i<prepCats.length;i++)if(prepCats[i].id===curPrep)cat=prepCats[i];
+  var color=cat?cat.color:"#C8A96E";
+
+  // progress
+  var tot=prepQs.length;
+  var cnt=0;for(var k in done)if(done[k])cnt++;
+  var pct=tot?Math.round(cnt*100/tot):0;
+  var bar=document.getElementById("progBar");
+  bar.style.width=pct+"%";bar.style.background=color;
+  document.getElementById("progTxt").textContent=cnt+"/"+tot+" ready";
+  document.getElementById("progPct").textContent=pct+"%";
+
+  var w=document.getElementById("wrapPrep");w.innerHTML="";
+  var hint=document.createElement("p");
+  hint.style.cssText="font-size:12px;color:#6A6058;margin:0 0 14px;font-style:italic";
+  hint.textContent="Tap a question to reveal the model answer. Tap \ud83d\udd0a to hear it.";
+  w.appendChild(hint);
+
+  prepQs.forEach(function(it,gi){
+    if(it.c!==curPrep)return;
+    var isDone=!!done[gi],isOpen=openCard===gi;
+    var q=document.createElement("div");
+    q.className="q"+(isOpen?" open":"")+(isDone?" done":"");
+
+    var head=document.createElement("div");head.className="head";
+    var dot=document.createElement("div");dot.className="dot";dot.style.background=isDone?"#7EC87E":color;
+    var qt=document.createElement("p");qt.className="qt";qt.textContent="\u201c"+it.q+"\u201d";
+    var arr=document.createElement("div");arr.className="arr";arr.textContent="\u2193";
+    head.appendChild(dot);head.appendChild(qt);head.appendChild(arr);
+    head.addEventListener("click",function(){
+      stopTTS();
+      openCard=isOpen?null:gi;
+      renderPrep();
+    });
+    q.appendChild(head);
+
+    if(isOpen){
+      var body=document.createElement("div");body.className="body";
+      var lbl=document.createElement("div");lbl.className="lbl";lbl.style.color=color;lbl.textContent="Model Answer";
+      var ans=document.createElement("p");ans.className="ans";ans.textContent=it.a;
+      body.appendChild(lbl);body.appendChild(ans);
+
+      var tip=document.createElement("div");tip.className="tip";
+      tip.style.background=color+"15";tip.style.border="1px solid "+color+"33";
+      var tb=document.createElement("b");tb.style.color=color;tb.textContent="TIP: ";
+      var ts=document.createElement("span");ts.style.color="#A09890";ts.textContent=it.tip;
+      tip.appendChild(tb);tip.appendChild(ts);
+      body.appendChild(tip);
+
+      var row=document.createElement("div");row.className="row";
+      var ls=mkListenBtn(it.a);
+      ls.style.color=color;
+      ls.style.borderColor=color+"55";
+      row.appendChild(ls);
+
+      var m=document.createElement("button");
+      m.className="mark"+(isDone?" done":"");
+      m.type="button";
+      m.textContent=isDone?"\u2713 Got it":"Mark as ready";
+      m.addEventListener("click",function(e){
+        e.stopPropagation();
+        if(done[gi])delete done[gi];else done[gi]=1;
+        save();renderPrep();
+      });
+      row.appendChild(m);
+      body.appendChild(row);
+      q.appendChild(body);
+    }
+    w.appendChild(q);
+  });
+}
+
+// ---- MODE SWITCH ----
+function setMode(m){
+  stopTTS();
+  mode=m;openCard=null;
+  var onCheat=m==="cheat";
+  document.getElementById("mCheat").className=onCheat?"on":"";
+  document.getElementById("mPrep").className=onCheat?"":"on";
+  document.getElementById("tabsCheat").style.display=onCheat?"flex":"none";
+  document.getElementById("tabsPrep").style.display=onCheat?"none":"flex";
+  document.getElementById("wrapCheat").style.display=onCheat?"block":"none";
+  document.getElementById("wrapPrep").style.display=onCheat?"none":"block";
+  document.getElementById("footCheat").style.display=onCheat?"block":"none";
+  document.getElementById("footPrep").style.display=onCheat?"none":"block";
+  document.getElementById("progPrep").style.display=onCheat?"none":"block";
+  if(onCheat)renderCheat();else renderPrep();
+}
+document.getElementById("mCheat").addEventListener("click",function(){setMode("cheat")});
+document.getElementById("mPrep").addEventListener("click",function(){setMode("prep")});
+
+// voices list is async on some android browsers
+if(ttsReady&&typeof window.speechSynthesis.onvoiceschanged!=="undefined"){
+  window.speechSynthesis.onvoiceschanged=function(){};
+}
+
+// stop speech if user switches away from page
+document.addEventListener("visibilitychange",function(){if(document.hidden)stopTTS()});
+
+// install hint — never show inside the native Android app (file://) or installed PWA
+try{
+  var isFile=location.protocol==="file:";
+  var isStandalone=window.matchMedia&&window.matchMedia("(display-mode: standalone)").matches;
+  if(!isFile&&!isStandalone&&!localStorage.getItem("pd_hint")){
+    document.getElementById("inst").style.display="block";
+    localStorage.setItem("pd_hint","1");
+  }
+}catch(e){}
+
+renderCheat();
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+-dontwarn android.webkit.**
+-keep class android.webkit.** { *; }
+-keepclassmembers class * extends android.webkit.WebViewClient { public void *(android.webkit.WebView, java.lang.String); }
+-keepattributes JavascriptInterface
