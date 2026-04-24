@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
@@ -29,10 +30,17 @@ import android.widget.ImageView;
 
 public class OverlayService extends Service {
 
-    public static final String ACTION_START = "pdprep.START";
-    public static final String ACTION_STOP  = "pdprep.STOP";
-    private static final String CHANNEL_ID  = "pdprep_overlay";
-    private static final int NOTIF_ID       = 42;
+    public static final String ACTION_START      = "pdprep.START";
+    public static final String ACTION_STOP       = "pdprep.STOP";
+    public static final String ACTION_OPEN_PANEL = "pdprep.OPEN_PANEL";
+    private static final String CHANNEL_ID       = "pdprep_overlay";
+    private static final int NOTIF_ID            = 42;
+    private static final String PREFS            = "pdprep_prefs";
+    private static final String K_BUBBLE_X       = "bubble_x";
+    private static final String K_BUBBLE_Y       = "bubble_y";
+    private static final String K_PANEL_X        = "panel_x";
+    private static final String K_PANEL_Y        = "panel_y";
+    private static final String K_PANEL_ALPHA    = "panel_alpha";
 
     private WindowManager wm;
     private int touchSlop;
@@ -66,15 +74,28 @@ public class OverlayService extends Service {
             return;
         }
         addBubble();
+        // preload panel off-screen so first tap is instant
+        main.postDelayed(new Runnable() {
+            @Override public void run() {
+                try { ensurePanelCreated(); } catch (Exception ignored) {}
+            }
+        }, 300);
     }
+
+    private final android.os.Handler main = new android.os.Handler(android.os.Looper.getMainLooper());
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (intent != null && ACTION_STOP.equals(intent.getAction())) {
-            stopSelf();
-            return START_NOT_STICKY;
+        if (intent != null) {
+            String a = intent.getAction();
+            if (ACTION_STOP.equals(a)) { stopSelf(); return START_NOT_STICKY; }
+            if (ACTION_OPEN_PANEL.equals(a)) { showPanel(); }
         }
         return START_STICKY;
+    }
+
+    private SharedPreferences prefs() {
+        return getSharedPreferences(PREFS, MODE_PRIVATE);
     }
 
     @Override
@@ -166,15 +187,18 @@ public class OverlayService extends Service {
                 new Intent(this, MainActivity.class), piFlags);
         PendingIntent piStop = PendingIntent.getService(this, 1,
                 new Intent(this, OverlayService.class).setAction(ACTION_STOP), piFlags);
+        PendingIntent piOpen = PendingIntent.getService(this, 2,
+                new Intent(this, OverlayService.class).setAction(ACTION_OPEN_PANEL), piFlags);
 
         Notification.Builder b = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? new Notification.Builder(this, CHANNEL_ID)
                 : new Notification.Builder(this);
         b.setContentTitle("PD Prep bubble running")
-         .setContentText("Tap the gold bubble on screen to open your cheat sheet.")
+         .setContentText("Tap Open Panel to summon the cheat sheet directly.")
          .setSmallIcon(android.R.drawable.ic_menu_info_details)
          .setContentIntent(pi)
          .setOngoing(true);
+        b.addAction(0, "Open Panel", piOpen);
         b.addAction(0, "Stop", piStop);
 
         try { startForeground(NOTIF_ID, b.build()); }
@@ -195,8 +219,20 @@ public class OverlayService extends Service {
                 PixelFormat.TRANSLUCENT);
         bubbleParams.gravity = Gravity.TOP | Gravity.START;
         Point size = screenSize();
-        bubbleParams.x = size.x - dp(72);
-        bubbleParams.y = size.y / 3;
+        SharedPreferences p = prefs();
+        int savedX = p.getInt(K_BUBBLE_X, Integer.MIN_VALUE);
+        int savedY = p.getInt(K_BUBBLE_Y, Integer.MIN_VALUE);
+        if (savedX == Integer.MIN_VALUE) {
+            bubbleParams.x = size.x - dp(72);
+            bubbleParams.y = size.y / 3;
+        } else {
+            bubbleParams.x = Math.max(0, Math.min(savedX, size.x - dp(56)));
+            bubbleParams.y = Math.max(0, Math.min(savedY, size.y - dp(80)));
+        }
+        int savedPX = p.getInt(K_PANEL_X, Integer.MIN_VALUE);
+        int savedPY = p.getInt(K_PANEL_Y, Integer.MIN_VALUE);
+        if (savedPX != Integer.MIN_VALUE) { savedPanelX = savedPX; savedPanelY = savedPY; }
+        savedAlpha = p.getFloat(K_PANEL_ALPHA, 0.96f);
 
         setupBubbleTouch(bubbleView);
         try { wm.addView(bubbleView, bubbleParams); }
@@ -273,6 +309,7 @@ public class OverlayService extends Service {
         if (bubbleParams.y < 0) bubbleParams.y = 0;
         if (bubbleParams.y > size.y - dp(80)) bubbleParams.y = size.y - dp(80);
         safeUpdate(bubbleView, bubbleParams);
+        prefs().edit().putInt(K_BUBBLE_X, bubbleParams.x).putInt(K_BUBBLE_Y, bubbleParams.y).apply();
     }
 
     // ---------------- panel (WebView cached across show/hide) ----------------
@@ -334,6 +371,7 @@ public class OverlayService extends Service {
                         return true;
                     case MotionEvent.ACTION_UP:
                     case MotionEvent.ACTION_CANCEL:
+                        prefs().edit().putInt(K_PANEL_X, savedPanelX).putInt(K_PANEL_Y, savedPanelY).apply();
                         return true;
                 }
                 return false;
@@ -351,6 +389,7 @@ public class OverlayService extends Service {
                 panelParams.alpha = next;
                 savedAlpha = next;
                 safeUpdate(panelView, panelParams);
+                prefs().edit().putFloat(K_PANEL_ALPHA, next).apply();
             }
         });
     }
