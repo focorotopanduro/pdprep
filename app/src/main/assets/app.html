@@ -282,6 +282,26 @@ window._pdTtsOnEnd=function(id){
 window._pdTtsOnProgress=function(id,pct){
   if(playing && playingId===id){setProgress(playing,pct)}
 };
+window._pdTtsWarming=function(id){
+  if(playing && playingId===id){
+    var t=btnTextNodes(playing);
+    if(t.length>=2){t[0].nodeValue="\u231b ";t[t.length-1].nodeValue="Warming…"}
+  }
+};
+window._pdTtsOnError=function(id,msg){
+  // if this error is for the current playing button, fall back to Web Speech API
+  if(playing && (playingId===id || playingId==="native")){
+    var btn=playing;
+    var text=btn.dataset.pdText||"";
+    resetBtn(btn);playing=null;playingId=null;
+    if(text && ttsReady){
+      // seamlessly retry via browser API
+      speakViaWeb(text,btn);
+      return;
+    }
+  }
+  if(msg) toast(msg);
+};
 // Called from Android service to change CSS-based transparency (0=solid, 1=86%, 2=70%).
 // Text stays 100% opaque at every level — only the background changes.
 window._pdSetTrans=function(level){
@@ -295,27 +315,28 @@ function speak(text,btn){
   stopTTS();
   playing=btn;
   btn.classList.add("playing");
+  btn.dataset.pdText=text; // remember the source text for auto-fallback on error
   setPlayingLabel(btn);
   setProgress(btn,0);
 
-  // 1. Native bridge (Android app) - most reliable
-  if(hasNative()){
+  // 1. Native bridge (Android app) — most reliable, auto-queues even before engine is ready
+  if(window.NativeTTS && typeof window.NativeTTS.speakAtRate==="function"){
     try{
-      var id=window.NativeTTS.speakAtRate?window.NativeTTS.speakAtRate(text,ttsRate):window.NativeTTS.speak(text);
+      var id=window.NativeTTS.speakAtRate(text,ttsRate);
       playingId=id||"native";
-      // heuristic progress fallback for engines that don't fire onRangeStart (older Androids):
-      // estimate duration from words/sec and update width
       startWebProgress(btn,text);
       return;
-    }catch(e){/* fall through to web api */}
+    }catch(e){/* fall through */}
   }
-
-  // 2. Web Speech API (browser/PWA)
+  speakViaWeb(text,btn);
+}
+function speakViaWeb(text,btn){
   if(!ttsReady){
-    alert("Speech not available on this device. Try reinstalling or updating Android System WebView.");
+    toast("Speech not available. Install Google Text-to-Speech from Play Store.");
     resetBtn(btn);playing=null;return;
   }
   try{
+    playing=btn;btn.classList.add("playing");setPlayingLabel(btn);setProgress(btn,0);
     var u=new SpeechSynthesisUtterance(text);
     u.rate=ttsRate;u.pitch=1;u.volume=1;u.lang="en-US";
     var vs=window.speechSynthesis.getVoices();
