@@ -18,13 +18,17 @@
         android:paddingBottom="8dp">
 
         <TextView
+            android:id="@+id/dragLogo"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="@string/panel_title"
+            android:text="@string/panel_title_tap"
             android:textColor="#C8A96E"
             android:textSize="12sp"
-            android:fontFamily="monospace" />
+            android:fontFamily="monospace"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="4dp" />
 
         <ImageView
             android:id="@+id/btnOpacity"

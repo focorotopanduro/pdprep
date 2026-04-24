@@ -120,6 +120,7 @@ public class OverlayService extends Service {
 
     @Override
     public void onDestroy() {
+        hideDismiss();
         removePanelFromWindow();
         if (tts != null) { try { tts.release(); } catch (Exception ignored) {} tts = null; }
         if (webView != null) {
@@ -278,22 +279,30 @@ public class OverlayService extends Service {
                         if (!moved && (Math.abs(dx) > touchSlop || Math.abs(dy) > touchSlop)) {
                             moved = true;
                             view.removeCallbacks(longPressCheck);
+                            showDismiss();
                         }
                         if (moved) {
                             bubbleParams.x = initX + dx;
                             bubbleParams.y = initY + dy;
                             safeUpdate(bubbleView, bubbleParams);
+                            updateDismissHighlight();
                         }
                         return true;
                     case MotionEvent.ACTION_UP:
                         view.removeCallbacks(longPressCheck);
-                        if (longFired) return true;
+                        if (longFired) { hideDismiss(); return true; }
                         long dur = System.currentTimeMillis() - downTime;
-                        if (!moved && dur < longPressMs) togglePanel();
-                        else snapToEdge();
+                        if (!moved && dur < longPressMs) { hideDismiss(); togglePanel(); }
+                        else if (bubbleOverDismiss()) {
+                            bubbleView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                            hideDismiss();
+                            stopSelf();
+                        }
+                        else { hideDismiss(); snapToEdge(); }
                         return true;
                     case MotionEvent.ACTION_CANCEL:
                         view.removeCallbacks(longPressCheck);
+                        hideDismiss();
                         if (moved) snapToEdge();
                         return true;
                 }
@@ -310,6 +319,68 @@ public class OverlayService extends Service {
         if (bubbleParams.y > size.y - dp(80)) bubbleParams.y = size.y - dp(80);
         safeUpdate(bubbleView, bubbleParams);
         prefs().edit().putInt(K_BUBBLE_X, bubbleParams.x).putInt(K_BUBBLE_Y, bubbleParams.y).apply();
+    }
+
+    // ---------------- dismiss-by-drag target ----------------
+
+    private View dismissView;
+    private android.widget.TextView dismissX;
+    private WindowManager.LayoutParams dismissParams;
+    private boolean dismissActive = false;
+
+    private void showDismiss() {
+        if (dismissView != null) return;
+        dismissView = LayoutInflater.from(this).inflate(R.layout.overlay_dismiss, null);
+        dismissX = dismissView.findViewById(R.id.dismissX);
+        dismissParams = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                overlayType(),
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                PixelFormat.TRANSLUCENT);
+        dismissParams.gravity = Gravity.TOP | Gravity.START;
+        dismissParams.windowAnimations = android.R.style.Animation_Toast;
+        try { wm.addView(dismissView, dismissParams); }
+        catch (Exception ignored) { dismissView = null; }
+    }
+
+    private void hideDismiss() {
+        if (dismissView != null) {
+            try { wm.removeView(dismissView); } catch (Exception ignored) {}
+            dismissView = null; dismissX = null; dismissActive = false;
+        }
+    }
+
+    /** rough distance between bubble center and X center */
+    private double bubbleToDismissDist() {
+        if (dismissX == null || bubbleParams == null) return Double.MAX_VALUE;
+        Point size = screenSize();
+        double bx = bubbleParams.x + dp(28);
+        double by = bubbleParams.y + dp(28);
+        // X target center: bottom-center minus bottom margin minus half-size
+        double xX = size.x / 2.0;
+        double xY = size.y - dp(48 + 36); // bottom margin 48 + half-height 36
+        double dxd = bx - xX, dyd = by - xY;
+        return Math.sqrt(dxd*dxd + dyd*dyd);
+    }
+
+    private boolean bubbleOverDismiss() {
+        return bubbleToDismissDist() < dp(60); // within 60dp of X center
+    }
+
+    private void updateDismissHighlight() {
+        if (dismissX == null) return;
+        boolean over = bubbleOverDismiss();
+        if (over != dismissActive) {
+            dismissActive = over;
+            dismissX.setBackgroundResource(over ? R.drawable.dismiss_bg_active : R.drawable.dismiss_bg);
+            if (over && bubbleView != null) {
+                bubbleView.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+            }
+        }
     }
 
     // ---------------- panel (WebView cached across show/hide) ----------------
@@ -384,14 +455,53 @@ public class OverlayService extends Service {
 
         btnOpacity.setOnClickListener(new View.OnClickListener() {
             @Override public void onClick(View v) {
-                float a = panelParams.alpha;
-                float next = (a <= 0.55f) ? 0.96f : (a <= 0.75f) ? 0.55f : 0.75f;
-                panelParams.alpha = next;
-                savedAlpha = next;
-                safeUpdate(panelView, panelParams);
-                prefs().edit().putFloat(K_PANEL_ALPHA, next).apply();
+                // Cycle 3 CSS-based background transparency levels.
+                // Text stays 100% opaque — only the background changes.
+                int cur = prefs().getInt("trans_level", 0);
+                int next = (cur + 1) % 3;
+                prefs().edit().putInt("trans_level", next).apply();
+                if (webView != null) {
+                    try { webView.evaluateJavascript("window._pdSetTrans && window._pdSetTrans(" + next + ");", null); }
+                    catch (Exception ignored) {}
+                }
             }
         });
+
+        // NEW: fullscreen toggle — tap drag-bar logo area to expand/restore
+        final android.widget.TextView dragLogo = panelView.findViewById(R.id.dragLogo);
+        if (dragLogo != null) {
+            dragLogo.setOnClickListener(new View.OnClickListener() {
+                @Override public void onClick(View v) { toggleFullscreen(); }
+            });
+        }
+    }
+
+    // ---- fullscreen ----
+    private boolean fullscreen = false;
+    private int[] prePanelSize, prePanelPos;
+    private void toggleFullscreen() {
+        if (!panelShown || panelParams == null) return;
+        Point size = screenSize();
+        if (!fullscreen) {
+            prePanelSize = new int[]{panelParams.width, panelParams.height};
+            prePanelPos  = new int[]{panelParams.x, panelParams.y};
+            panelParams.width = size.x;
+            panelParams.height = size.y;
+            panelParams.x = 0;
+            panelParams.y = 0;
+            fullscreen = true;
+        } else {
+            if (prePanelSize != null) {
+                panelParams.width = prePanelSize[0];
+                panelParams.height = prePanelSize[1];
+            }
+            if (prePanelPos != null) {
+                panelParams.x = prePanelPos[0];
+                panelParams.y = prePanelPos[1];
+            }
+            fullscreen = false;
+        }
+        safeUpdate(panelView, panelParams);
     }
 
     private void showPanel() {
@@ -417,13 +527,27 @@ public class OverlayService extends Service {
             panelParams.x = Math.max(0, Math.min(savedPanelX, size.x - wh[0]));
             panelParams.y = Math.max(0, Math.min(savedPanelY, size.y - wh[1]));
         }
-        panelParams.alpha = savedAlpha;
+        // Text legibility fix: never dim the whole window (that fades text too).
+        // Transparency is now controlled by CSS on the WebView, so text stays 100% opaque.
+        panelParams.alpha = 1.0f;
 
         try {
             wm.addView(panelView, panelParams);
             panelShown = true;
             if (bubbleView != null) bubbleView.setVisibility(View.GONE);
-            if (webView != null) webView.onResume();
+            if (webView != null) {
+                webView.onResume();
+                // push the last remembered transparency level into the WebView CSS
+                final int level = prefs().getInt("trans_level", 0);
+                webView.post(new Runnable() {
+                    @Override public void run() {
+                        try {
+                            webView.evaluateJavascript(
+                                    "window._pdSetTrans && window._pdSetTrans(" + level + ");", null);
+                        } catch (Exception ignored) {}
+                    }
+                });
+            }
         } catch (Exception e) {
             panelShown = false;
         }

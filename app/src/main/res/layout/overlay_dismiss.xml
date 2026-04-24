@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <View
+        android:id="@+id/shield"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/dismiss_shield" />
+
+    <TextView
+        android:id="@+id/dismissX"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="48dp"
+        android:background="@drawable/dismiss_bg"
+        android:gravity="center"
+        android:text="\u2715"
+        android:textColor="#FFF0E0E0"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:includeFontPadding="false"
+        android:shadowColor="#CC000000"
+        android:shadowRadius="3"
+        android:shadowDx="0"
+        android:shadowDy="1" />
+</FrameLayout>

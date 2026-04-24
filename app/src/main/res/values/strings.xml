@@ -4,6 +4,7 @@
     <string name="app_name_long">Carlos · Power Design Inc.</string>
     <string name="header_kicker">INTERVIEW PREP</string>
     <string name="panel_title">PD PREP</string>
+    <string name="panel_title_tap">PD PREP  ·  tap to fullscreen</string>
     <string name="status_default">Ready.</string>
     <string name="start_bubble">Start Floating Bubble</string>
     <string name="stop">Stop</string>
