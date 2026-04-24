@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
-    <solid android:color="#C8A96E" />
-    <stroke android:width="2dp" android:color="#0A0C10" />
+    <!-- 33% opaque gold - bubble is ghost-like, you can see Zoom underneath -->
+    <solid android:color="#55C8A96E" />
+    <!-- soft dark edge so the bubble outline is visible on light backgrounds -->
+    <stroke android:width="1dp" android:color="#802A2D3A" />
 </shape>

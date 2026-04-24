@@ -9,10 +9,14 @@
         android:background="@drawable/bubble_bg"
         android:gravity="center"
         android:text="PD"
-        android:textColor="#0A0C10"
+        android:textColor="#FF0A0C10"
         android:textSize="20sp"
         android:textStyle="bold"
         android:fontFamily="sans-serif-black"
         android:includeFontPadding="false"
+        android:shadowColor="#FFFFFFFF"
+        android:shadowRadius="3"
+        android:shadowDx="0"
+        android:shadowDy="0"
         android:contentDescription="@string/app_name" />
 </FrameLayout>

@@ -25,6 +25,7 @@ public class MainActivity extends Activity {
     private WebView webView;
     private Button btnStart, btnStop;
     private TextView status;
+    private TtsBridge tts;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -44,6 +45,8 @@ public class MainActivity extends Activity {
         ws.setLoadWithOverviewMode(true);
         ws.setUseWideViewPort(false);
         webView.setBackgroundColor(Color.parseColor("#0A0C10"));
+        tts = new TtsBridge(this, webView);
+        webView.addJavascriptInterface(tts, "NativeTTS");
         webView.loadUrl("file:///android_asset/app.html");
 
         btnStart.setOnClickListener(new View.OnClickListener() {
@@ -137,6 +140,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        if (tts != null) { try { tts.release(); } catch (Exception ignored) {} tts = null; }
         if (webView != null) {
             try {
                 webView.stopLoading();

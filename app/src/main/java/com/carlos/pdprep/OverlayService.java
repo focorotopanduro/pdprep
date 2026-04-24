@@ -42,6 +42,7 @@ public class OverlayService extends Service {
 
     private View panelView;
     private WebView webView;
+    private TtsBridge tts;
     private WindowManager.LayoutParams panelParams;
     private boolean panelShown = false;
     private boolean panelLoaded = false;
@@ -99,6 +100,7 @@ public class OverlayService extends Service {
     @Override
     public void onDestroy() {
         removePanelFromWindow();
+        if (tts != null) { try { tts.release(); } catch (Exception ignored) {} tts = null; }
         if (webView != null) {
             try {
                 webView.stopLoading();
@@ -300,6 +302,8 @@ public class OverlayService extends Service {
         ws.setCacheMode(WebSettings.LOAD_DEFAULT);
         webView.setBackgroundColor(Color.TRANSPARENT);
         webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        tts = new TtsBridge(this, webView);
+        webView.addJavascriptInterface(tts, "NativeTTS");
         if (!panelLoaded) {
             webView.loadUrl("file:///android_asset/app.html");
             panelLoaded = true;

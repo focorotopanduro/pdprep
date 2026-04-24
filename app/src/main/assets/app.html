@@ -183,33 +183,57 @@ var curPrep="resume";
 var done=load();
 var openCard=null;
 var playing=null; // the current playing button element
+var playingId=null; // current utterance id (native bridge)
 var ttsReady="speechSynthesis" in window;
+function hasNative(){try{return !!(window.NativeTTS&&window.NativeTTS.isReady&&window.NativeTTS.isReady())}catch(e){return false}}
 
 function load(){try{return JSON.parse(localStorage.getItem("pd_done")||"{}")}catch(e){return{}}}
 function save(){try{localStorage.setItem("pd_done",JSON.stringify(done))}catch(e){}}
 
 // ---- TTS ----
+// Prefer native Android bridge (TtsBridge.java -> window.NativeTTS).
+// Falls back to Web Speech API in regular browsers (the standalone website).
+function resetBtn(b){if(b){b.classList.remove("playing");b.firstChild.nodeValue="\ud83d\udd0a ";b.lastChild.nodeValue="Listen"}}
 function stopTTS(){
-  if(!ttsReady)return;
-  try{window.speechSynthesis.cancel()}catch(e){}
-  if(playing){playing.classList.remove("playing");playing.firstChild.nodeValue="\ud83d\udd0a ";playing.lastChild.nodeValue="Listen";playing=null}
+  try{if(window.NativeTTS&&window.NativeTTS.stop)window.NativeTTS.stop()}catch(e){}
+  try{if(ttsReady)window.speechSynthesis.cancel()}catch(e){}
+  if(playing){resetBtn(playing);playing=null;playingId=null}
 }
+// Called from Android when a native utterance finishes or errors.
+window._pdTtsOnEnd=function(id){
+  if(playing && playingId===id){resetBtn(playing);playing=null;playingId=null}
+};
 function speak(text,btn){
-  if(!ttsReady){alert("Your browser doesn't support speech. Try Chrome.");return}
   if(playing===btn){stopTTS();return}
   stopTTS();
-  var u=new SpeechSynthesisUtterance(text);
-  u.rate=0.98;u.pitch=1;u.volume=1;u.lang="en-US";
-  // pick a good english voice
-  var vs=window.speechSynthesis.getVoices();
-  for(var i=0;i<vs.length;i++){if(/en[-_]US/i.test(vs[i].lang)){u.voice=vs[i];break}}
-  u.onend=function(){if(playing===btn){btn.classList.remove("playing");btn.firstChild.nodeValue="\ud83d\udd0a ";btn.lastChild.nodeValue="Listen";playing=null}};
-  u.onerror=u.onend;
   playing=btn;
   btn.classList.add("playing");
   btn.firstChild.nodeValue="\u23f8 ";
   btn.lastChild.nodeValue="Stop";
-  try{window.speechSynthesis.speak(u)}catch(e){stopTTS()}
+
+  // 1. Native bridge (Android app) - most reliable
+  if(hasNative()){
+    try{
+      var id=window.NativeTTS.speak(text);
+      playingId=id||"native";
+      return;
+    }catch(e){/* fall through to web api */}
+  }
+
+  // 2. Web Speech API (browser/PWA)
+  if(!ttsReady){
+    alert("Speech not available on this device. Try reinstalling or updating Android System WebView.");
+    resetBtn(btn);playing=null;return;
+  }
+  try{
+    var u=new SpeechSynthesisUtterance(text);
+    u.rate=0.98;u.pitch=1;u.volume=1;u.lang="en-US";
+    var vs=window.speechSynthesis.getVoices();
+    for(var i=0;i<vs.length;i++){if(/en[-_]US/i.test(vs[i].lang)){u.voice=vs[i];break}}
+    u.onend=function(){if(playing===btn){resetBtn(btn);playing=null}};
+    u.onerror=u.onend;
+    window.speechSynthesis.speak(u);
+  }catch(e){stopTTS()}
 }
 function mkListenBtn(text){
   var b=document.createElement("button");
